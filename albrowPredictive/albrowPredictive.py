@@ -1,12 +1,16 @@
 import numpy as np
-
+from scipy.stats import uniform
 
 
 class AlbrowPredictive:
 
     def _init_(times,
-               flux,
+               mag,
                sd_flux)
+
+    #used to set the uniform prior on base mag
+    self.mag_min = np.min(mag)
+    self.mag_max = np.max(mag)
 
     def compute_log_prior(...):
         """Calcuales the the natural log of
@@ -19,4 +23,10 @@ class AlbrowPredictive:
         ln_pr_ln_A0 = np.log(0.660) - (-1.289*ln-A0)
         # Equation (17)
         ln_pr_ln_deltaT = np.log(0.156) - (ln_deltaT-1.432)**2 / 0.458
-       return 
+        # Paper doesnt mention the prior used, but I assume it to be uniform
+        ln_pr_fbl = uniform.logpdf(fbl,0.0,1.0)
+        # Paper doesnr mention the prior used but I will asuumed it to be uniform
+        ln_pr_mb = uniform.logpdf(mb,self.mag_min - 1.0, self.mag_max + 1.0)
+
+   
+        return ln_pr_fbl + ln_pr_ln_A0 + ln_pr_ln_deltaT + ln_pr_ln_tE + ln_pr_mb 
