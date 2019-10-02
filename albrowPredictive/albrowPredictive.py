@@ -19,11 +19,11 @@ class AlbrowPredictive:
     self.mag_max = np.max(mags)
     
     #initialized the MAP values of the parameters
-    self.MAP_ln_tE = 0.0
-    self.MAP_ln_A0 = 0.0
-    self.MAP_deltaT = 0.0
-    self.MAP_flb = 0.0
-    self.MAP_mb = 0.0
+    self.MAP_params = np.zeros(5)
+    
+    #initialize the MLE values of the parameter
+    self.MLE_params = np.zeros(5)
+
  
     
  
@@ -63,9 +63,16 @@ class AlbrowPredictive:
         mb = params[4]
         
         
-        gen_mag = 
+        u0 = np.sqrt((2*A0/np.sqrt(A0**2-1))-2)
+        u = np.sqrt(u0**2+((self.times-deltaT-self.alert_time)/tE)**2)
+        Amp = (u**2+2) / (u*np.sqrt(u**2+4))
 
-        return 0.0
+        pred_mag  = mb - 2.5*np.log10(Amp+fbl)
+        sigma_2 = sd_mags**2         
+
+        log_likelihood = -0.5*np.sum((pred_mag - mags)**2 / sigma_2+ np.log(sigma_2))
+
+        return log_likelihood
 
     def neg_log_likelihood(self,params):
         return -self.compute_log_likelihood(params)                     
