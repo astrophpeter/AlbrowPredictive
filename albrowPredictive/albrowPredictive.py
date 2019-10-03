@@ -4,12 +4,14 @@ from scipy.optimize import minimize
 
 class AlbrowPredictive:
 
-    def __init__(self,times,mags,sd_mags,alert_time):
+    def __init__(self,times,mags,sd_mags):
  
         self.times = times
         self.mags = mags
         self.sd_mags = sd_mags
-        self.alert_time = alert_time
+        
+        #find alert time
+        self.alert_time = self.find_alert_time()
 
         #used to set the uniform prior on base mag
         self.mag_min = np.min(mags)
@@ -128,5 +130,41 @@ class AlbrowPredictive:
         baseline.
         """
         
+        # use the first 10 data points in the light curve to determine the magnitude
+        # baseline
 
+        mean_mag = np.mean(self.mags[:10])
+        std_mag  = np.std(self.mags[:10])
+
+        num_above = 0 
+        i = 9
+
+        while num_above < 3 and i < len(self.times):
+            
+            i += 1 
+
+            if mags[i] < mean_mag - std_mag:
+                num_above += 1
+            else:
+                num_above = 0.0
+
+           
+        return times[i] 
+
+
+
+
+
+
+
+
+
+
+
+     
+
+
+
+
+ 
          
