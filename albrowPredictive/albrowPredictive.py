@@ -103,7 +103,7 @@ class AlbrowPredictive:
         return self._pred_mag(self.MLE_params,new_times)
 
 
-    def _pred_mag(params,times):
+    def _pred_mag(self,params,times):
         """Computes the magnitude for the PSPL model at given times,
         and with model parameters.
         """
@@ -122,7 +122,11 @@ class AlbrowPredictive:
 
         return pred_mag
 
-
-
+    def find_alert_time(self):
+        """Find the alert time in the data. This is defined in the paper
+        as the time where there are 3 data points 1 standard deviation away from
+        baseline.
+        """
+        
 
          
