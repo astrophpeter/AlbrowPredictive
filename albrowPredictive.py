@@ -67,9 +67,19 @@ class AlbrowPredictive:
         self.initial_params = np.array([2.0,5.0,7.0,0.8,np.mean(mags)])
         self.initial_params_bounds = [(-1,10),(0.1,8.0),(-1,10),(0.0001,0.999),(self.mag_min,self.mag_max)] 
    
-    def compute_log_prior(self,params):
-        """Calcuales the the natural log of
-        the prior p(params)  for a given set of parameters.
+    def compute_log_prior(self,params: ndarray) -> float:
+        """Calcuales the the natural log of the prior p(params).  
+
+        This implements the the fixed emperically determined priors from the
+        paper.
+
+        Args:
+            params : array of model parameters [ln_tE,ln_A0,ln_deltaT,fbl,mb],
+                or [ln(Einstien time),ln(Max Amplication),ln(time since alert),
+                blending paramerter,baseline magnitude],
+                shape = (5,).
+        Returns:
+            ln_prior : natural logarithm of the prior.
         """
         ln_tE = params[0]
         ln_A0 = params[1]
@@ -92,30 +102,77 @@ class AlbrowPredictive:
         return ln_pr_fbl + ln_pr_ln_A0 + ln_pr_ln_deltaT + ln_pr_ln_tE + ln_pr_mb
 
 
-    def compute_log_likelihood(self,params):
-        """Calculates the natural log of 
-        the likelihood p(data|params) for a given set of paramters
+    def compute_log_likelihood(self,params: ndarray) -> float:
+        """Calculates the natural log of the likelihood p(data|params). 
+
+        Implements a standard Gaussian Likelihood.
+
+        Args:
+            params : array of model parameters [ln_tE,ln_A0,ln_deltaT,fbl,mb],
+                or [ln(Einstien time),ln(Max Amplication),ln(time since alert),
+                blending paramerter,baseline magnitude],
+                shape = (5,).
+        Returns:
+            ln_likelihood : natural logarithm of the likelihood.
         """
+        
         pred_mag  = self._pred_mag(params,self.times)
         sigma_2 = self.sd_mags**2         
-        log_likelihood = -0.5*np.sum((pred_mag - self.mags)**2 / sigma_2+ np.log(sigma_2))
+        ln_likelihood = -0.5*np.sum((pred_mag - self.mags)**2 / sigma_2+ np.log(sigma_2))
 
-        return log_likelihood
+        return ln_likelihood
 
-    def neg_log_likelihood(self,params):
+    def neg_log_likelihood(self,params: ndarray) -> float:
+        """Calculates the negative natural log of the likelihood p(data|params). 
+
+        This is for optimizing purposes, for finding the maximum likelihood 
+        (mle) solution.
+
+        Args:
+            params : array of model parameters [ln_tE,ln_A0,ln_deltaT,fbl,mb],
+                or [ln(Einstien time),ln(Max Amplication),ln(time since alert),
+                blending paramerter,baseline magnitude],
+                shape = (5,).
+        Returns:
+            neg_ln_likelihood : negative natural logarithm of the likelihood.
+        """
+
         return -self.compute_log_likelihood(params)                     
    
-    def compute_log_prob(self,params):
-        """Calculates the the natural log of the p(data,params)
-        for the given parameters
+    def compute_log_prob(self,params: ndarray) -> float:
+        """Calculates the the natural log of the joint p(data,params).
+
+        This is proportional to the posterior distribution.
+
+        Args:
+            params : array of model parameters [ln_tE,ln_A0,ln_deltaT,fbl,mb],
+                or [ln(Einstien time),ln(Max Amplication),ln(time since alert),
+                blending paramerter,baseline magnitude],
+                shape = (5,).
+        Returns:
+            ln_prob : natural logarithm of the joint model and data distribution.
         """
         return self.compute_log_prior(params) + self.compute_log_likelihood(params) 
 
-    def neg_log_prob(self,params):
+    def neg_log_prob(self,params: ndarray) -> float:
+        """Calculates the negative of the natural log of p(data,params).
+        
+        This is for optimizing purposes, for finding the maximum a-posteroir 
+        (MAP) solution.
+        
+        Args:
+            params : array of model parameters [ln_tE,ln_A0,ln_deltaT,fbl,mb],
+                or [ln(Einstien time),ln(Max Amplication),ln(time since alert),
+                blending paramerter,baseline magnitude],
+                shape = (5,).
+        Returns:
+            neg_ln_prob : negative natural logarithm of the joint model and 
+                data distribution.
+        """
         return -self.compute_log_prob(params)
 
-    def train_MAP(self):
-        """Finds the Maximum A-prior estimate of the
+    def train_MAP(self) -> None:
+        """Finds the Maximum a-pr estimate of the
         model parameters
         """
         
@@ -124,7 +181,7 @@ class AlbrowPredictive:
         self.map_params = result['x']
         print(result)
 
-    def train_MLE(self):
+    def train_MLE(self) -> None:
         """Finds the maximum likelihood estimate of the
         model parameters
         """
