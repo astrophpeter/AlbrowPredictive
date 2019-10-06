@@ -172,42 +172,74 @@ class AlbrowPredictive:
         return -self.compute_log_prob(params)
 
     def train_MAP(self) -> None:
-        """Finds the Maximum a-pr estimate of the
-        model parameters
-        """
+        """Finds the Maximum a posteriori (MAP) solution.
         
+        Uses the informative priors and the current data
+        the find and assign the MAP parameter values.
+      
+        Prints the optimization result.      
+        """
         result = differential_evolution(self.neg_log_prob,
                           bounds=self.initial_params_bounds)
         self.map_params = result['x']
         print(result)
 
-    def train_MLE(self) -> None:
-        """Finds the maximum likelihood estimate of the
-        model parameters
-        """
 
+    def train_MLE(self) -> None:
+        """Finds the maximum likelihood (MLE) solution.
+        
+        Uses only the current data to find and assign the MLE
+        parameters. This is minimizing chi^2.
+
+        Prints the optimization result.
+        """
         result = differential_evolution(self.neg_log_likelihood,
                          bounds=self.initial_params_bounds)
         self.mle_params = result['x']
-
         print(result)
 
-    def predict_MAP(self,new_times):
-        """Predict magnitudes at the times new times using the
-        MAP paramters
+    def predict_MAP(self,new_times: ndarray) -> ndarray:
+        """Predicts magnitudes using MAP solution.
+
+        M = number of new times to predict at.
+
+        Args:
+            new_times: times at which to generate predictions
+                , units [mjd], shape (M,).
+        Returns:
+            predictions: predictions of the magnitues at the new_times, using
+                the MAP solution, units [mag], shape (M,).
         """
         return self._pred_mag(self.map_params,new_times)
 
-    def predict_MLE(self,new_times):
-        """Predict magnitued at the times new times using
-        the MLE paramters
+    def predict_MLE(self,new_times: ndarray) -> ndarray:
+        """Predicts magnitudes using MLE solution.
+
+        M = number of new times to predict at.
+
+        Args:
+            new_times: times at which to generate predictions
+                , units [mjd], shape (M,).
+        Returns:
+            predictions: predictions of the magnitues at the new_times, using 
+                the MLE solution, units [mag], shape (M,).
         """
         return self._pred_mag(self.mle_params,new_times)
         
 
-    def _pred_mag(self,params,times):
-        """Computes the magnitude for the PSPL model at given times,
-        and with model parameters.
+    def _pred_mag(self,params: ndarray, times: ndarray) -> ndarray:
+        """Computes the magnitude for the Point source point lens model.
+    
+        Args:
+            params : array of model parameters [ln_tE,ln_A0,ln_deltaT,fbl,mb],
+                or [ln(Einstien time),ln(Max Amplication),ln(time since alert),
+                blending paramerter,baseline magnitude],
+                shape = (5,).
+            times : array of times to predict the magnitude. units [mjd],
+                shape (M,).
+        Returns:
+            predicted_mag : array of predicted magnitudes, units [mags],
+                shape (M,).
         """
         tE = 10**params[0]
         A0 = 10**params[1]
@@ -215,19 +247,18 @@ class AlbrowPredictive:
         fbl = params[3]
         mb = params[4]
 
-
         u0 = np.sqrt((2*A0/np.sqrt(A0**2-1))-2)
         u = np.sqrt(u0**2+((times-deltaT-self.alert_time)/tE)**2)
         Amp = (u**2+2) / (u*np.sqrt(u**2+4))
-
         pred_mag  = mb - 2.5*np.log10(fbl*(Amp-1)+1)
 
         return pred_mag
 
-    def find_alert_time(self):
-        """Find the alert time in the data. This is defined in the paper
-        as the time where there are 3 data points 1 standard deviation away from
-        baseline.
+    def find_alert_time(self) -> None:
+        """Finds the alert time in the data. 
+
+        This is defined in the paper as the time where there are 3 data points
+        1 standard deviation away from baseline.
         """
         
         # Also not clear from the paper how to doe this,
