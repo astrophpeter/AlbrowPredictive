@@ -1,10 +1,42 @@
+# -*- coding: utf-8 -*-
+"""Albrow Predictive.
+
+This module implements the paper: "Early Estimation of Microlensing Event 
+Magnifications", by M.D. Albrow 2004:
+
+@ARTICLE{2004ApJ...607..821A,
+       author = {{Albrow}, Michael D.},
+        title = "{Early Estimation of Microlensing Event Magnifications}",
+      journal = {\apj},
+     keywords = {Cosmology: Gravitational Lensing, Methods: Data Analysis,
+                 Astrophysics},
+         year = "2004",
+        month = "Jun",
+       volume = {607},
+       number = {2},
+        pages = {821-827},
+          doi = {10.1086/383565},
+archivePrefix = {arXiv},
+       eprint = {astro-ph/0402323},
+ primaryClass = {astro-ph},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2004ApJ...607..821A},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+All equation references in this module relate to the numbering in the above 
+paper.
+"""
+
 import numpy as np
+from numpy import ndarray
 from scipy.stats import uniform
 from scipy.optimize import differential_evolution
 
 class AlbrowPredictive:
+    """Albrow 2004's predictive microlensing model.
+    """
 
-    def __init__(self,times,mags,sd_mags):
+    def __init__(self,times: ndarray, mags: ndarray, sd_mags: ndarray) -> None:
  
         self.times = times
         self.mags = mags
