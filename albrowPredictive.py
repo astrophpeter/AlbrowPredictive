@@ -37,7 +37,17 @@ class AlbrowPredictive:
     """
 
     def __init__(self,times: ndarray, mags: ndarray, sd_mags: ndarray) -> None:
+        """Contructs the predictive model using passed in data.
+
+        N = number of data points.
  
+        Args:
+            times: times, [mjd] units shape = (N,).
+            mags: Magnitues, [mag] units, shape = (N,).
+            sd_mags: Errors of the magnidudes, [mag] units, shape = (N,)   
+        
+        """
+        #store data
         self.times = times
         self.mags = mags
         self.sd_mags = sd_mags
@@ -53,10 +63,10 @@ class AlbrowPredictive:
         self.map_params = np.zeros(5)
         self.mle_params = np.zeros(5)
 
-        #initial quess for the optimization
+        #initial guesses for the optimization
         self.initial_params = np.array([2.0,5.0,7.0,0.8,np.mean(mags)])
         self.initial_params_bounds = [(-1,10),(0.1,8.0),(-1,10),(0.0001,0.999),(self.mag_min,self.mag_max)] 
- 
+   
     def compute_log_prior(self,params):
         """Calcuales the the natural log of
         the prior p(params)  for a given set of parameters.
