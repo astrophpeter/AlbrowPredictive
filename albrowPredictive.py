@@ -243,9 +243,9 @@ class AlbrowPredictive:
             predicted_mag : array of predicted magnitudes, units [mags],
                 shape (M,).
         """
-        tE = 10**params[0]
-        A0 = 10**params[1]
-        deltaT = 10**params[2]
+        tE = np.exp(params[0])
+        A0 = np.exp(params[1])
+        deltaT = np.exp(params[2])
         fbl = params[3]
         mb = params[4]
 
