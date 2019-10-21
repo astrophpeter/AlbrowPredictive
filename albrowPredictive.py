@@ -87,10 +87,12 @@ class AlbrowPredictive:
         fbl = params[3]
         mb = params[4]
 
-        # Equation (16,15,17)
-        ln_pr_ln_tE = np.log(0.476) - ((ln_tE-1.333)**2 / 0.330) 
-        ln_pr_ln_A0 = np.log(0.660) - (1.289*ln_A0)
-        ln_pr_ln_deltaT = np.log(0.156) - ((ln_deltaT-1.432)**2 / 0.458)    
+        # Equation (16,15,17) (note that Albrow uses "log" for log10)
+        log10e = np.log10(np.exp(1))
+        ln_pr_ln_tE = np.log(0.476) - ((log10e*ln_tE - 1.333)**2 / 0.330) + np.log(log10e)
+        ln_pr_ln_A0 = np.log(0.660) - (1.289*log10e*ln_A0) + np.log(log10e)
+        ln_pr_ln_deltaT = np.log(0.156) - ((log10e*ln_deltaT - 1.432)**2 / 0.458) +\
+                np.log(log10e)
      
         # Paper doesnt mention the prior used, but I assume it to be uniform
         ln_pr_fbl = uniform.logpdf(fbl,0.0,1.0)
@@ -241,9 +243,9 @@ class AlbrowPredictive:
             predicted_mag : array of predicted magnitudes, units [mags],
                 shape (M,).
         """
-        tE = 10**params[0]
-        A0 = 10**params[1]
-        deltaT = 10**params[2]
+        tE = np.exp(params[0])
+        A0 = np.exp(params[1])
+        deltaT = np.exp(params[2])
         fbl = params[3]
         mb = params[4]
 
